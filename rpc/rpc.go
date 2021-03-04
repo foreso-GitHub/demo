@@ -84,7 +84,7 @@ func (service *RPCService) Start() error {
 	address := fmt.Sprintf("%s:%d", rpcAddress, rpcPort)
 
 	http.HandleFunc("/", IndexHandler)
-	http.HandleFunc("/jsonrpc", service.rpcService)
+	http.HandleFunc("/v1/jsonrpc", service.rpcService)
 	fmt.Println("rpc server started on", address)
 	http.ListenAndServe(address, nil)
 	return nil

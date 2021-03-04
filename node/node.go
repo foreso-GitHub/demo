@@ -282,21 +282,21 @@ func (n *Node) getNextSequence(address string) uint64 {
 
 func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 	switch method {
-	case "blockNumber":
+	case "jt_blockNumber":
 		result := n.consensusService.GetBlockNumber()
 		return result, nil
-	case "getBalance":
+	case "jt_getBalance":
 		address := params[0].(string)
 		accountEntry, err := n.consensusService.GetAccount(address)
 		if err != nil {
 			return nil, err
 		}
 		return accountEntry.Amount, nil
-	case "getTransactionCount":
+	case "jt_getTransactionCount":
 		address := params[0].(string)
 		seq := n.getNextSequence(address)
 		return seq, nil
-	case "getTransactionReceipt":
+	case "jt_getTransactionReceipt":
 		hashString := params[0].(string)
 		h, err := hex.DecodeString(hashString)
 		if err != nil {
@@ -312,7 +312,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return receipt, nil
-	case "getTransactionByHash":
+	case "jt_getTransactionByHash":
 		hashString := params[0].(string)
 		h, err := hex.DecodeString(hashString)
 		if err != nil {
@@ -327,7 +327,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return txWithData, nil
-	case "getTransactionByIndex":
+	case "jt_getTransactionByIndex":
 		address := params[0].(string)
 		a := account.NewAddress()
 		err := a.UnmarshalText([]byte(address))
@@ -345,7 +345,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return txWithData, nil
-	case "getBlockByHash":
+	case "jt_getBlockByHash":
 		hashString := params[0].(string)
 		h, err := hex.DecodeString(hashString)
 		if err != nil {
@@ -360,7 +360,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return block, nil
-	case "getBlockByNumber":
+	case "jt_getBlockByNumber":
 		index := uint64(params[0].(float64))
 		block, err := n.merkleService.GetBlockByIndex(index)
 		if err != nil {
@@ -371,7 +371,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return block, nil
-	case "signTransaction":
+	case "jt_signTransaction":
 		l := len(params)
 		list := make([]string, l)
 		for i := 0; i < l; i++ {
@@ -385,7 +385,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			fmt.Println("sign transaction", hash.String(), blob)
 		}
 		return list, nil
-	case "sendTransaction":
+	case "jt_sendTransaction":
 		l := len(params)
 		list := make([]string, l)
 		for i := 0; i < l; i++ {
@@ -406,7 +406,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			fmt.Println("send transaction", hash.String())
 		}
 		return list, nil
-	case "sendRawTransaction":
+	case "jt_sendRawTransaction":
 		l := len(params)
 		list := make([]string, l)
 		for i := 0; i < l; i++ {
