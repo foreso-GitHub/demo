@@ -22,3 +22,5 @@
     * 每个节点的gas_address必须一致
     * 每个节点的secret必须不一致
     * 目前账本的地址格式是使用以太坊的地址格式（比如0xc287B1266732495Fe8c93CE3Ba631597153fdd91）， 而非井通的格式（比如jHb9CJAWyB4jr91VRWn96DkukG4bwdtyTh），可以通过插拔账本模块来改变
+    * root帐号：0x6da68a0c5dAAE0715AE6b62F00f548A2C6981c2f，beec9ec61c17b04cb9e4a9b7017e749f92835e2743e95f94cde218d667b14109
+    * 目前原生币为TEST
