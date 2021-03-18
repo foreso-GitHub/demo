@@ -180,13 +180,46 @@ func ToString(m *map[string]interface{}, key string) string {
 	return ""
 }
 
+func ToBytes(m *map[string]interface{}, key string) []byte {
+	s := ToString(m, key)
+	if len(s) > 0 {
+		b := []byte(s)
+		return b
+	}
+	return nil
+}
+
+func ToBytesArray(m *map[string]interface{}, key string) [][]byte {
+	ba := make([][]byte, 0)
+	item, ok := (*m)[key]
+	if ok {
+		listValue, ok := item.([]interface{})
+		if ok {
+			sa := make([]string, len(listValue))
+			for i, arg := range listValue {
+				sa[i] = arg.(string)
+			}
+			for i := 0; i < len(sa); i++ {
+				s := sa[i]
+				b := []byte(s)
+				ba = append(ba, b)
+			}
+			return ba
+		}
+	}
+	return ba
+}
+
 func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Transaction, error) {
 	from := ToString(&txm, "from")
 	secret := ToString(&txm, "secret")
 	to := ToString(&txm, "to")
 	value := ToInt64(&txm, "value")
-	name := ToString(&txm, "name")
-	typeParam := ToInt64(&txm, "type")
+
+	data_timestamp := ToInt64(&txm, "data_timestamp")
+	data_tags := ToBytesArray(&txm, "data_tags")
+	data_name := ToBytes(&txm, "data_name")
+	data_value := ToBytes(&txm, "data_value")
 
 	fromKey := account.NewKey()
 	err := fromKey.UnmarshalText([]byte(secret))
@@ -228,8 +261,10 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		Sequence:    seq,
 		Amount:      value,
 		Gas:         int64(10),
-		Name:        name,
-		Type:        typeParam,
+		Timestamp:   data_timestamp,
+		Tags:        data_tags,
+		Name:        data_name,
+		Value:       data_value,
 		Destination: toAccount,
 	}
 	err = n.cryptoService.Sign(fromKey, tx)
