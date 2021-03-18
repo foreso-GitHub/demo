@@ -185,6 +185,8 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 	secret := ToString(&txm, "secret")
 	to := ToString(&txm, "to")
 	value := ToInt64(&txm, "value")
+	name := ToString(&txm, "name")
+	typeParam := ToInt64(&txm, "type")
 
 	fromKey := account.NewKey()
 	err := fromKey.UnmarshalText([]byte(secret))
@@ -208,6 +210,17 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		return "", nil, err
 	}
 	seq := n.getNextSequence(fromAddress)
+	//tx := &block.Transaction{
+	//	TransactionType: libblock.TransactionType(1),
+	//
+	//	Account:     fromAccount,
+	//	Sequence:    seq,
+	//	Amount:      value,
+	//	Gas:         int64(10),
+	//	Name:		 "hello my friend",
+	//	Type:        int64(29),
+	//	Destination: toAccount,
+	//}
 	tx := &block.Transaction{
 		TransactionType: libblock.TransactionType(1),
 
@@ -215,6 +228,8 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		Sequence:    seq,
 		Amount:      value,
 		Gas:         int64(10),
+		Name:        name,
+		Type:        typeParam,
 		Destination: toAccount,
 	}
 	err = n.cryptoService.Sign(fromKey, tx)
@@ -280,11 +295,26 @@ func (n *Node) getNextSequence(address string) uint64 {
 	return accountEntry.Sequence + 1
 }
 
+//func (n *Node) getAccount(address string) *block.AccountState {
+//	accountEntry, err := n.consensusService.GetAccount(address)
+//	if err != nil {
+//		return nil
+//	}
+//	return accountEntry
+//}
+
 func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 	switch method {
 	case "jt_blockNumber":
 		result := n.consensusService.GetBlockNumber()
 		return result, nil
+	case "jt_getAccount":
+		address := params[0].(string)
+		accountEntry, err := n.consensusService.GetAccount(address)
+		if err != nil {
+			return nil, err
+		}
+		return accountEntry, nil
 	case "jt_getBalance":
 		address := params[0].(string)
 		accountEntry, err := n.consensusService.GetAccount(address)

@@ -12,3 +12,5 @@ copy /Y "C:\Users\xuou\go\src\github.com\tokentransfer\demo\main.exe" "E:\2. wor
 copy /Y "C:\Users\xuou\go\src\github.com\tokentransfer\demo\main.exe" "E:\2. work\井系\3. 链景\井通新链\demo链\demo\node5\main.exe"
 
 
+
+
