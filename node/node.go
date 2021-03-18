@@ -180,6 +180,21 @@ func ToString(m *map[string]interface{}, key string) string {
 	return ""
 }
 
+func ToStringArray(m *map[string]interface{}, key string) []string {
+	item, ok := (*m)[key]
+	if ok {
+		listValue, ok := item.([]interface{})
+		if ok {
+			sa := make([]string, len(listValue))
+			for i, arg := range listValue {
+				sa[i] = arg.(string)
+			}
+			return sa
+		}
+	}
+	return make([]string, 0)
+}
+
 func ToBytes(m *map[string]interface{}, key string) []byte {
 	s := ToString(m, key)
 	if len(s) > 0 {
@@ -191,24 +206,33 @@ func ToBytes(m *map[string]interface{}, key string) []byte {
 
 func ToBytesArray(m *map[string]interface{}, key string) [][]byte {
 	ba := make([][]byte, 0)
-	item, ok := (*m)[key]
-	if ok {
-		listValue, ok := item.([]interface{})
-		if ok {
-			sa := make([]string, len(listValue))
-			for i, arg := range listValue {
-				sa[i] = arg.(string)
-			}
-			for i := 0; i < len(sa); i++ {
-				s := sa[i]
-				b := []byte(s)
-				ba = append(ba, b)
-			}
-			return ba
-		}
+	sa := ToStringArray(m, key)
+	for i := 0; i < len(sa); i++ {
+		ba = append(ba, []byte(sa[i]))
 	}
 	return ba
 }
+
+//func ToBytesArray(m *map[string]interface{}, key string) [][]byte {
+//	ba := make([][]byte, 0)
+//	item, ok := (*m)[key]
+//	if ok {
+//		listValue, ok := item.([]interface{})
+//		if ok {
+//			sa := make([]string, len(listValue))
+//			for i, arg := range listValue {
+//				sa[i] = arg.(string)
+//			}
+//			for i := 0; i < len(sa); i++ {
+//				s := sa[i]
+//				b := []byte(s)
+//				ba = append(ba, b)
+//			}
+//			return ba
+//		}
+//	}
+//	return ba
+//}
 
 func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Transaction, error) {
 	from := ToString(&txm, "from")
@@ -217,9 +241,9 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 	value := ToInt64(&txm, "value")
 
 	data_timestamp := ToInt64(&txm, "data_timestamp")
-	data_tags := ToBytesArray(&txm, "data_tags")
-	data_name := ToBytes(&txm, "data_name")
-	data_value := ToBytes(&txm, "data_value")
+	data_tags := ToStringArray(&txm, "data_tags")
+	data_name := ToString(&txm, "data_name")
+	data_value := ToString(&txm, "data_value")
 
 	fromKey := account.NewKey()
 	err := fromKey.UnmarshalText([]byte(secret))
