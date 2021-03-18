@@ -1,0 +1,18 @@
+{
+    "address":"localhost",
+    "port":17001,
+    "rpc_address":"localhost",
+    "rpc_port":17545,
+    "gas_address":"0xc287B1266732495Fe8c93CE3Ba631597153fdd91",
+    "data_dir":"./data",
+    "secret":"abb33a8c2bb48d3b1c2ce365685ac3b96563e6a17ebc4367cd637e33149f94ea",
+    "bootstraps":[
+        "121.89.209.19:17001",
+        "121.89.212.154:17001",
+        "121.89.207.217:17001",
+        "121.89.206.115:17001",
+        "121.89.198.119:17001"
+    ]
+}
+
+
