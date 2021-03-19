@@ -1,7 +1,7 @@
 {
-    "address":"localhost",
+    "address":"0.0.0.0",
     "port":17001,
-    "rpc_address":"localhost",
+    "rpc_address":"0.0.0.0",
     "rpc_port":17545,
     "gas_address":"0xc287B1266732495Fe8c93CE3Ba631597153fdd91",
     "data_dir":"./data",
