@@ -79,6 +79,16 @@ func (service *ConsensusService) GenerateBlock(list []libblock.TransactionWithDa
 				Sequence: uint64(0),
 				Amount:   int64(110000000000000),
 			},
+			&block.DeviceState{
+				State: block.State{
+					BlockIndex: uint64(0),
+				},
+				Account:     rootAccount,
+				Sequence:    uint64(0),
+				Symbol:      "Device_1",
+				Description: "Device 1 for station_ppv",
+				Tags:        []string{"31.140049", "121.328787", "PVS000001", "huayifristworkshop"},
+			},
 		}
 
 		ms := service.MerkleService
@@ -337,6 +347,20 @@ func (service *ConsensusService) GetCurrency(indexKey string) (*block.CurrencySt
 		return nil, err
 	}
 	info, ok := state.(*block.CurrencyState)
+	if !ok {
+		return nil, errors.New("error account state")
+	}
+	return info, nil
+}
+
+func (service *ConsensusService) GetDevice(indexKey string) (*block.DeviceState, error) {
+	ms := service.MerkleService
+
+	state, err := ms.GetStateByKey(indexKey)
+	if err != nil {
+		return nil, err
+	}
+	info, ok := state.(*block.DeviceState)
 	if !ok {
 		return nil, errors.New("error account state")
 	}

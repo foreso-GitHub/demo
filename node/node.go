@@ -245,6 +245,10 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 	data_name := ToString(&txm, "data_name")
 	data_value := ToString(&txm, "data_value")
 	device_name := ToString(&txm, "device")
+	tx_type := ToString(&txm, "type")
+	symbol := ToString(&txm, "symbol")
+	description := ToString(&txm, "description")
+	device_tags := ToStringArray(&txm, "device_tags")
 
 	fromKey := account.NewKey()
 	err := fromKey.UnmarshalText([]byte(secret))
@@ -269,26 +273,12 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 	}
 	seq := n.getNextSequence(fromAddress)
 	if len(device_name) > 0 {
-		currencyEntry, err := n.consensusService.GetCurrency(device_name)
-		if err != nil {
-			return "", nil, err
-		}
-		if currencyEntry == nil {
-			return "", nil, errors.New("Device [" + device_name + "] doesn't exist!")
+		deviceEntry, err := n.consensusService.GetDevice(device_name)
+		if err != nil || deviceEntry == nil {
+			return "", nil, errors.New("Device [" + device_name + "] doesn't exist! ")
 		}
 	}
 
-	//tx := &block.Transaction{
-	//	TransactionType: libblock.TransactionType(1),
-	//
-	//	Account:     fromAccount,
-	//	Sequence:    seq,
-	//	Amount:      value,
-	//	Gas:         int64(10),
-	//	Name:		 "hello my friend",
-	//	Type:        int64(29),
-	//	Destination: toAccount,
-	//}
 	tx := &block.Transaction{
 		TransactionType: libblock.TransactionType(1),
 
@@ -303,6 +293,26 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		Device:      device_name,
 		Destination: toAccount,
 	}
+
+	if tx_type == "payment" || len(tx_type) == 0 {
+
+	} else if tx_type == "newCurrency" {
+
+	} else if tx_type == "newDevice" {
+		tx = &block.Transaction{
+			TransactionType: libblock.TransactionType(203),
+
+			Account:     fromAccount,
+			Sequence:    seq,
+			Gas:         int64(10),
+			Symbol:      symbol,
+			Description: description,
+			DeviceTags:  device_tags,
+		}
+	} else {
+
+	}
+
 	err = n.cryptoService.Sign(fromKey, tx)
 	if err != nil {
 		return "", nil, err
@@ -393,6 +403,13 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return currencyEntry, nil
+	case "jt_getDevice": //indexKey = currency symbol + currency sequence, like 'Device_1:0', 'Station_Monitor_2:1'
+		indexKey := params[0].(string)
+		deviceEntry, err := n.consensusService.GetDevice(indexKey)
+		if err != nil {
+			return nil, err
+		}
+		return deviceEntry, nil
 	case "jt_getBalance":
 		address := params[0].(string)
 		accountEntry, err := n.consensusService.GetAccount(address)
