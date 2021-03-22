@@ -58,7 +58,18 @@ func (service *ConsensusService) GenerateBlock(list []libblock.TransactionWithDa
 				Name:        "TEST Coin",
 				Symbol:      "TEST",
 				Decimals:    6,
-				TotalSupply: int64(100000000000000),
+				TotalSupply: int64(110000000000000),
+			},
+			&block.CurrencyState{
+				State: block.State{
+					BlockIndex: uint64(0),
+				},
+				Account:     rootAccount,
+				Sequence:    uint64(1),
+				Name:        "New Coin",
+				Symbol:      "NewCoin",
+				Decimals:    8,
+				TotalSupply: int64(990000000000000),
 			},
 			&block.AccountState{
 				State: block.State{
@@ -66,7 +77,7 @@ func (service *ConsensusService) GenerateBlock(list []libblock.TransactionWithDa
 				},
 				Account:  rootAccount,
 				Sequence: uint64(0),
-				Amount:   int64(100000000000000),
+				Amount:   int64(110000000000000),
 			},
 		}
 
@@ -312,6 +323,20 @@ func (service *ConsensusService) GetAccount(address string) (*block.AccountState
 		return nil, err
 	}
 	info, ok := state.(*block.AccountState)
+	if !ok {
+		return nil, errors.New("error account state")
+	}
+	return info, nil
+}
+
+func (service *ConsensusService) GetCurrency(indexKey string) (*block.CurrencyState, error) {
+	ms := service.MerkleService
+
+	state, err := ms.GetStateByKey(indexKey)
+	if err != nil {
+		return nil, err
+	}
+	info, ok := state.(*block.CurrencyState)
 	if !ok {
 		return nil, errors.New("error account state")
 	}

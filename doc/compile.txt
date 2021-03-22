@@ -3,7 +3,7 @@
 1. 编译，cmd窗口
 ------
 
-cd E:\2. work\井系\3. 链景\井通新链\监控模块\codes\jingtum-monitor
+cd C:\Users\xuou\go\src\github.com\tokentransfer
 
 ===
 check env

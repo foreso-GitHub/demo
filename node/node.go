@@ -374,6 +374,13 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 			return nil, err
 		}
 		return accountEntry, nil
+	case "jt_getCurrency": //indexKey = currency symbol + currency sequence, like 'TEST:0', 'NewCoin:1'
+		indexKey := params[0].(string)
+		currencyEntry, err := n.consensusService.GetCurrency(indexKey)
+		if err != nil {
+			return nil, err
+		}
+		return currencyEntry, nil
 	case "jt_getBalance":
 		address := params[0].(string)
 		accountEntry, err := n.consensusService.GetAccount(address)
