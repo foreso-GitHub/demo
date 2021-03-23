@@ -282,51 +282,81 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, libblock.Tra
 		device_name = "device_1"
 	}
 
-	tx_payment := &block.Transaction{
+	var tx libblock.Transaction
+	tx_tx := &block.Transaction{
 		TransactionType: libblock.TransactionType(1),
 
 		Account:     fromAccount,
 		Sequence:    seq,
 		Amount:      value,
 		Gas:         int64(10),
-		Type:        "payment",
+		Type:        "transaction",
 		Destination: toAccount,
 	}
 
-	payment := &block.Payment{
-		Transaction: *tx_payment,
+	if tx_type == "payment" {
+		tx_tx.Type = tx_type
+		tx_tx.TransactionType = libblock.TransactionType(202)
 
-		Timestamp: data_timestamp,
-		Device:    device_name,
-		Tags:      data_tags,
-		Name:      data_name,
-		Value:     data_value,
-	}
+		tx = &block.Payment{
+			Transaction: *tx_tx,
 
-	if tx_type == "newDevice" {
-		tx_newDevice := &block.Transaction{
-			TransactionType: libblock.TransactionType(203),
-
-			Account:     fromAccount,
-			Sequence:    seq,
-			Amount:      value,
-			Gas:         int64(10),
-			Type:        tx_type,
-			Destination: toAccount,
+			Timestamp: data_timestamp,
+			Device:    device_name,
+			Tags:      data_tags,
+			Name:      data_name,
+			Value:     data_value,
 		}
+	} else if tx_type == "newDevice" {
+		tx_tx.Type = tx_type
+		tx_tx.TransactionType = libblock.TransactionType(203)
 
-		newDevice := &block.NewDevice{
-			Transaction: *tx_newDevice,
+		tx = &block.NewDevice{
+			Transaction: *tx_tx,
 
 			Symbol:      symbol,
 			Description: description,
 			DeviceTags:  device_tags,
 		}
-
-		return n.postProcessSignTx(fromKey, newDevice)
+	} else {
+		tx = tx_tx
 	}
 
-	return n.postProcessSignTx(fromKey, payment)
+	err = n.cryptoService.Sign(fromKey, tx)
+	if err != nil {
+		return "", nil, err
+	}
+	data, err := tx.MarshalBinary()
+	if err != nil {
+		return "", nil, err
+	}
+	blob := libcore.Bytes(data).String()
+	return blob, tx, nil
+
+	//if tx_type == "newDevice" {
+	//	tx_newDevice := &block.Transaction{
+	//		TransactionType: libblock.TransactionType(203),
+	//
+	//		Account:     fromAccount,
+	//		Sequence:    seq,
+	//		Amount:      value,
+	//		Gas:         int64(10),
+	//		Type:        tx_type,
+	//		Destination: toAccount,
+	//	}
+	//
+	//	newDevice := &block.NewDevice{
+	//		Transaction: *tx_newDevice,
+	//
+	//		Symbol:      symbol,
+	//		Description: description,
+	//		DeviceTags:  device_tags,
+	//	}
+	//
+	//	return n.postProcessSignTx(fromKey, newDevice)
+	//}
+	//
+	//return n.postProcessSignTx(fromKey, payment)
 
 	//err = n.cryptoService.Sign(fromKey, tx)
 	//if err != nil {
@@ -517,7 +547,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return txWithData, nil
+		return txWithData.GetReceipt(), nil
 	case "jt_getTransactionByIndex":
 		address := params[0].(string)
 		a := account.NewAddress()
