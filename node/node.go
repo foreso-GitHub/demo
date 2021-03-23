@@ -234,7 +234,7 @@ func ToBytesArray(m *map[string]interface{}, key string) [][]byte {
 //	return ba
 //}
 
-func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Transaction, error) {
+func (n *Node) signTransaction(txm map[string]interface{}) (string, libblock.Transaction, error) {
 	from := ToString(&txm, "from")
 	secret := ToString(&txm, "secret")
 	to := ToString(&txm, "to")
@@ -282,7 +282,7 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		device_name = "device_1"
 	}
 
-	tx := &block.Transaction{
+	tx_payment := &block.Transaction{
 		TransactionType: libblock.TransactionType(1),
 
 		Account:     fromAccount,
@@ -290,42 +290,106 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		Amount:      value,
 		Gas:         int64(10),
 		Type:        "payment",
-		Timestamp:   data_timestamp,
-		Tags:        data_tags,
-		Name:        data_name,
-		Value:       data_value,
-		Device:      device_name,
 		Destination: toAccount,
 	}
 
-	if tx_type == "newCurrency" {
+	payment := &block.Payment{
+		Transaction: *tx_payment,
 
-	} else if tx_type == "newDevice" {
-		tx = &block.Transaction{
+		Timestamp: data_timestamp,
+		Device:    device_name,
+		Tags:      data_tags,
+		Name:      data_name,
+		Value:     data_value,
+	}
+
+	if tx_type == "newDevice" {
+		tx_newDevice := &block.Transaction{
 			TransactionType: libblock.TransactionType(203),
 
 			Account:     fromAccount,
 			Sequence:    seq,
+			Amount:      value,
 			Gas:         int64(10),
 			Type:        tx_type,
+			Destination: toAccount,
+		}
+
+		newDevice := &block.NewDevice{
+			Transaction: *tx_newDevice,
+
 			Symbol:      symbol,
 			Description: description,
 			DeviceTags:  device_tags,
-			Destination: toAccount,
 		}
+
+		return n.postProcessSignTx(fromKey, newDevice)
 	}
 
-	err = n.cryptoService.Sign(fromKey, tx)
+	return n.postProcessSignTx(fromKey, payment)
+
+	//err = n.cryptoService.Sign(fromKey, tx)
+	//if err != nil {
+	//	return "", nil, err
+	//}
+	//data, err := tx.MarshalBinary()
+	//if err != nil {
+	//	return "", nil, err
+	//}
+	//blob := libcore.Bytes(data).String()
+	//return blob, tx, nil
+}
+
+func (n *Node) postProcessSignTx(fromKey libaccount.Key, t libblock.Transaction) (string, libblock.Transaction, error) {
+	////tx, ok := t.(*block.Transaction)
+	//var tx libblock.Transaction
+	//var ok bool
+	//switch t.(type) {
+	//case *block.Transaction:
+	//	//meta = chaincore.CORE_TRANSACTION
+	//	tx, ok = t.(*block.Transaction)
+	//case *block.Payment:
+	//	//meta = chaincore.CORE_PAYMENT
+	//	tx, ok = t.(*block.Payment)
+	//case *block.NewDevice:
+	//	//meta = chaincore.CORE_NEWDEVICE
+	//	tx, ok = t.(*block.NewDevice)
+	//default:
+	//	err := errors.New("error data type")
+	//	return "", nil, err
+	//}
+	////tx, ok := t.(*block.Payment)
+	//if !ok {
+	//	return "", nil, errors.New("Convert tx to block.Transaction error!")
+	//}
+	////if ok2 {
+	////    err := errors.New(tx2.Type)
+	////    return "", nil, err
+	////}
+	err := n.cryptoService.Sign(fromKey, t)
 	if err != nil {
 		return "", nil, err
 	}
-	data, err := tx.MarshalBinary()
+	data, err := t.MarshalBinary()
 	if err != nil {
 		return "", nil, err
 	}
 	blob := libcore.Bytes(data).String()
-	return blob, tx, nil
+	return blob, t, nil
 }
+
+//func (n *Node) postProcessSignNewDevice(fromKey libaccount.Key, tx *block.NewDevice) (string, *block.Transaction, error) {
+//	err := n.cryptoService.Sign(fromKey, tx)
+//	if err != nil {
+//		return "", nil, err
+//	}
+//	data, err := tx.MarshalBinary()
+//	if err != nil {
+//		return "", nil, err
+//	}
+//	blob := libcore.Bytes(data).String()
+//	return blob, tx, nil
+//}
 
 func (n *Node) sendTransaction(txm map[string]interface{}) (libblock.TransactionWithData, libblock.Transaction, error) {
 	_, tx, err := n.signTransaction(txm)
@@ -339,7 +403,7 @@ func (n *Node) sendTransaction(txm map[string]interface{}) (libblock.Transaction
 	return txWithData, tx, nil
 }
 
-func (n *Node) processTransaction(tx *block.Transaction) (libblock.TransactionWithData, libblock.Transaction, error) {
+func (n *Node) processTransaction(tx libblock.Transaction) (libblock.TransactionWithData, libblock.Transaction, error) {
 	n.transactionLocker.Lock()
 	defer n.transactionLocker.Unlock()
 

@@ -376,12 +376,31 @@ func (service *ConsensusService) VerifyTransaction(t libblock.Transaction) (bool
 	if !ok {
 		return false, errors.New("error transaction")
 	}
-	tx, ok := t.(*block.Transaction)
+	//tx, ok := t.(*block.Transaction)
+	//if !ok {
+	//	return false, errors.New("error transaction")
+	//}
+
+	switch t.(type) {
+	case *block.Transaction:
+		_, ok = t.(*block.Transaction)
+	case *block.Payment:
+		_, ok = t.(*block.Payment)
+	case *block.NewDevice:
+		_, ok = t.(*block.NewDevice)
+	default:
+		return false, errors.New("error transaction")
+	}
 	if !ok {
 		return false, errors.New("error transaction")
 	}
 
-	account := tx.Account
+	account := t.GetAccount()
+	tx_s := t.GetSequence()
+	tx_a := t.GetAmount()
+	tx_g := t.GetGas()
+
+	//account := tx.Account
 	address, err := account.GetAddress()
 	if err != nil {
 		return false, err
@@ -395,11 +414,11 @@ func (service *ConsensusService) VerifyTransaction(t libblock.Transaction) (bool
 		amount = info.Amount
 	}
 
-	if tx.Sequence != sequence {
-		return false, fmt.Errorf("error sequence: %d != %d", tx.Sequence, sequence)
+	if tx_s != sequence {
+		return false, fmt.Errorf("error sequence: %d != %d", tx_s, sequence)
 	}
 
-	if (amount - tx.Amount - int64(tx.Gas)) < 0 {
+	if (amount - tx_a - int64(tx_g)) < 0 {
 		return false, errors.New("insuffient amount")
 	}
 
@@ -457,25 +476,25 @@ func (service *ConsensusService) addDevice(account libcore.Address, symbol strin
 }
 
 func (service *ConsensusService) ProcessTransaction(t libblock.Transaction) (libblock.TransactionWithData, error) {
-	tx, ok := t.(*block.Transaction)
-	if !ok {
-		return nil, errors.New("error transaction")
-	}
+	//tx, ok := t.(*block.Transaction)
+	//if !ok {
+	//	return nil, errors.New("error transaction")
+	//}
 
 	gasAccount := service.Config.GetGasAccount()
-	e1, err := service.addBalance(gasAccount, int64(tx.Gas), false, 0)
+	e1, err := service.addBalance(gasAccount, int64(t.GetGas()), false, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	account := tx.Account
-	e2, err := service.addBalance(account, -(tx.Amount + int64(tx.Gas)), true, t.GetIndex())
+	account := t.GetAccount()
+	e2, err := service.addBalance(account, -(t.GetAmount() + int64(t.GetGas())), true, t.GetIndex())
 	if err != nil {
 		return nil, err
 	}
 
-	destination := tx.Destination
-	e3, err := service.addBalance(destination, tx.Amount, false, 0)
+	destination := t.GetDestination()
+	e3, err := service.addBalance(destination, t.GetAmount(), false, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -489,8 +508,9 @@ func (service *ConsensusService) ProcessTransaction(t libblock.Transaction) (lib
 		},
 	}
 
-	tx_type := tx.Type
+	tx_type := t.GetType()
 	if tx_type == "newDevice" {
+		tx, _ := t.(*block.NewDevice)
 		device_state, err := service.addDevice(tx.Account, tx.Symbol, tx.Description, tx.DeviceTags)
 		if err != nil {
 			return nil, err
