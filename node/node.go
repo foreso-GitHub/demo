@@ -272,11 +272,14 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		return "", nil, err
 	}
 	seq := n.getNextSequence(fromAddress)
+
 	if len(device_name) > 0 {
-		deviceEntry, err := n.consensusService.GetDevice(device_name + ":0")
+		deviceEntry, err := n.consensusService.GetDevice(device_name)
 		if err != nil || deviceEntry == nil {
 			return "", nil, errors.New("Device [" + device_name + "] doesn't exist! ")
 		}
+	} else {
+		device_name = "device_1"
 	}
 
 	tx := &block.Transaction{

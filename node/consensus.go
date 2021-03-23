@@ -435,7 +435,7 @@ func (service *ConsensusService) addBalance(account libcore.Address, amount int6
 }
 
 func (service *ConsensusService) addDevice(account libcore.Address, symbol string, description string, tags []string) (libblock.State, error) {
-	device, _ := service.GetDevice(symbol + ":0")
+	device, _ := service.GetDevice(symbol)
 	//if err != nil {
 	//	return nil, err
 	//}
