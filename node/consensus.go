@@ -434,6 +434,28 @@ func (service *ConsensusService) addBalance(account libcore.Address, amount int6
 	return info, nil
 }
 
+func (service *ConsensusService) addDevice(account libcore.Address, symbol string, description string, tags []string) (libblock.State, error) {
+	device, _ := service.GetDevice(symbol + ":0")
+	//if err != nil {
+	//	return nil, err
+	//}
+	if device != nil {
+		return nil, errors.New("Device [" + symbol + "] has existed!")
+	} else {
+		device = &block.DeviceState{
+			State: block.State{
+				BlockIndex: uint64(0),
+			},
+			Account:     account,
+			Sequence:    uint64(0),
+			Symbol:      symbol,
+			Description: description,
+			Tags:        tags,
+		}
+	}
+	return device, nil
+}
+
 func (service *ConsensusService) ProcessTransaction(t libblock.Transaction) (libblock.TransactionWithData, error) {
 	tx, ok := t.(*block.Transaction)
 	if !ok {
@@ -465,6 +487,15 @@ func (service *ConsensusService) ProcessTransaction(t libblock.Transaction) (lib
 			e2,
 			e3,
 		},
+	}
+
+	tx_type := tx.Type
+	if tx_type == "newDevice" {
+		device_state, err := service.addDevice(tx.Account, tx.Symbol, tx.Description, tx.DeviceTags)
+		if err != nil {
+			return nil, err
+		}
+		r.States = append(r.States, device_state)
 	}
 
 	return &block.TransactionWithData{

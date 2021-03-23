@@ -273,7 +273,7 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 	}
 	seq := n.getNextSequence(fromAddress)
 	if len(device_name) > 0 {
-		deviceEntry, err := n.consensusService.GetDevice(device_name)
+		deviceEntry, err := n.consensusService.GetDevice(device_name + ":0")
 		if err != nil || deviceEntry == nil {
 			return "", nil, errors.New("Device [" + device_name + "] doesn't exist! ")
 		}
@@ -286,6 +286,7 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		Sequence:    seq,
 		Amount:      value,
 		Gas:         int64(10),
+		Type:        "payment",
 		Timestamp:   data_timestamp,
 		Tags:        data_tags,
 		Name:        data_name,
@@ -294,9 +295,7 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 		Destination: toAccount,
 	}
 
-	if tx_type == "payment" || len(tx_type) == 0 {
-
-	} else if tx_type == "newCurrency" {
+	if tx_type == "newCurrency" {
 
 	} else if tx_type == "newDevice" {
 		tx = &block.Transaction{
@@ -305,12 +304,12 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, *block.Trans
 			Account:     fromAccount,
 			Sequence:    seq,
 			Gas:         int64(10),
+			Type:        tx_type,
 			Symbol:      symbol,
 			Description: description,
 			DeviceTags:  device_tags,
+			Destination: toAccount,
 		}
-	} else {
-
 	}
 
 	err = n.cryptoService.Sign(fromKey, tx)
