@@ -296,7 +296,7 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, libblock.Tra
 
 	if tx_type == "payment" {
 		tx_tx.Type = tx_type
-		tx_tx.TransactionType = libblock.TransactionType(202)
+		tx_tx.TransactionType = libblock.TransactionType(201)
 
 		tx = &block.Payment{
 			Transaction: *tx_tx,
@@ -332,93 +332,44 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, libblock.Tra
 	}
 	blob := libcore.Bytes(data).String()
 	return blob, tx, nil
-
-	//if tx_type == "newDevice" {
-	//	tx_newDevice := &block.Transaction{
-	//		TransactionType: libblock.TransactionType(203),
-	//
-	//		Account:     fromAccount,
-	//		Sequence:    seq,
-	//		Amount:      value,
-	//		Gas:         int64(10),
-	//		Type:        tx_type,
-	//		Destination: toAccount,
-	//	}
-	//
-	//	newDevice := &block.NewDevice{
-	//		Transaction: *tx_newDevice,
-	//
-	//		Symbol:      symbol,
-	//		Description: description,
-	//		DeviceTags:  device_tags,
-	//	}
-	//
-	//	return n.postProcessSignTx(fromKey, newDevice)
-	//}
-	//
-	//return n.postProcessSignTx(fromKey, payment)
-
-	//err = n.cryptoService.Sign(fromKey, tx)
-	//if err != nil {
-	//	return "", nil, err
-	//}
-	//data, err := tx.MarshalBinary()
-	//if err != nil {
-	//	return "", nil, err
-	//}
-	//blob := libcore.Bytes(data).String()
-	//return blob, tx, nil
 }
 
-func (n *Node) postProcessSignTx(fromKey libaccount.Key, t libblock.Transaction) (string, libblock.Transaction, error) {
-	////tx, ok := t.(*block.Transaction)
-	//var tx libblock.Transaction
-	//var ok bool
-	//switch t.(type) {
-	//case *block.Transaction:
-	//	//meta = chaincore.CORE_TRANSACTION
-	//	tx, ok = t.(*block.Transaction)
-	//case *block.Payment:
-	//	//meta = chaincore.CORE_PAYMENT
-	//	tx, ok = t.(*block.Payment)
-	//case *block.NewDevice:
-	//	//meta = chaincore.CORE_NEWDEVICE
-	//	tx, ok = t.(*block.NewDevice)
-	//default:
-	//	err := errors.New("error data type")
-	//	return "", nil, err
-	//}
-	////tx, ok := t.(*block.Payment)
-	//if !ok {
-	//	return "", nil, errors.New("Convert tx to block.Transaction error!")
-	//}
-	////if ok2 {
-	////    err := errors.New(tx2.Type)
-	////    return "", nil, err
-	////}
-	err := n.cryptoService.Sign(fromKey, t)
-	if err != nil {
-		return "", nil, err
-	}
-	data, err := t.MarshalBinary()
-	if err != nil {
-		return "", nil, err
-	}
-	blob := libcore.Bytes(data).String()
-	return blob, t, nil
-}
-
-//func (n *Node) postProcessSignNewDevice(fromKey libaccount.Key, tx *block.NewDevice) (string, *block.Transaction, error) {
-//	err := n.cryptoService.Sign(fromKey, tx)
+//func (n *Node) postProcessSignTx(fromKey libaccount.Key, t libblock.Transaction) (string, libblock.Transaction, error) {
+//	////tx, ok := t.(*block.Transaction)
+//	//var tx libblock.Transaction
+//	//var ok bool
+//	//switch t.(type) {
+//	//case *block.Transaction:
+//	//	//meta = chaincore.CORE_TRANSACTION
+//	//	tx, ok = t.(*block.Transaction)
+//	//case *block.Payment:
+//	//	//meta = chaincore.CORE_PAYMENT
+//	//	tx, ok = t.(*block.Payment)
+//	//case *block.NewDevice:
+//	//	//meta = chaincore.CORE_NEWDEVICE
+//	//	tx, ok = t.(*block.NewDevice)
+//	//default:
+//	//	err := errors.New("error data type")
+//	//	return "", nil, err
+//	//}
+//	////tx, ok := t.(*block.Payment)
+//	//if !ok {
+//	//	return "", nil, errors.New("Convert tx to block.Transaction error!")
+//	//}
+//	////if ok2 {
+//	////    err := errors.New(tx2.Type)
+//	////    return "", nil, err
+//	////}
+//	err := n.cryptoService.Sign(fromKey, t)
 //	if err != nil {
 //		return "", nil, err
 //	}
-//	data, err := tx.MarshalBinary()
+//	data, err := t.MarshalBinary()
 //	if err != nil {
 //		return "", nil, err
 //	}
 //	blob := libcore.Bytes(data).String()
-//	return blob, tx, nil
+//	return blob, t, nil
 //}
 
 func (n *Node) sendTransaction(txm map[string]interface{}) (libblock.TransactionWithData, libblock.Transaction, error) {
@@ -547,7 +498,7 @@ func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return txWithData.GetReceipt(), nil
+		return txWithData, nil
 	case "jt_getTransactionByIndex":
 		address := params[0].(string)
 		a := account.NewAddress()

@@ -516,10 +516,19 @@ func (service *ConsensusService) ProcessTransaction(t libblock.Transaction) (lib
 			return nil, err
 		}
 		r.States = append(r.States, device_state)
+		return &block.NewDeviceWithData{
+			Transaction: t,
+			Receipt:     r,
+		}, nil
+	} else if tx_type == "payment" {
+		return &block.PaymentWithData{
+			Transaction: t,
+			Receipt:     r,
+		}, nil
+	} else {
+		return &block.TransactionWithData{
+			Transaction: t,
+			Receipt:     r,
+		}, nil
 	}
-
-	return &block.TransactionWithData{
-		Transaction: t,
-		Receipt:     r,
-	}, nil
 }
