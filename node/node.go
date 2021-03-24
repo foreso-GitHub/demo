@@ -213,27 +213,6 @@ func ToBytesArray(m *map[string]interface{}, key string) [][]byte {
 	return ba
 }
 
-//func ToBytesArray(m *map[string]interface{}, key string) [][]byte {
-//	ba := make([][]byte, 0)
-//	item, ok := (*m)[key]
-//	if ok {
-//		listValue, ok := item.([]interface{})
-//		if ok {
-//			sa := make([]string, len(listValue))
-//			for i, arg := range listValue {
-//				sa[i] = arg.(string)
-//			}
-//			for i := 0; i < len(sa); i++ {
-//				s := sa[i]
-//				b := []byte(s)
-//				ba = append(ba, b)
-//			}
-//			return ba
-//		}
-//	}
-//	return ba
-//}
-
 func (n *Node) signTransaction(txm map[string]interface{}) (string, libblock.Transaction, error) {
 	from := ToString(&txm, "from")
 	secret := ToString(&txm, "secret")
@@ -334,44 +313,6 @@ func (n *Node) signTransaction(txm map[string]interface{}) (string, libblock.Tra
 	return blob, tx, nil
 }
 
-//func (n *Node) postProcessSignTx(fromKey libaccount.Key, t libblock.Transaction) (string, libblock.Transaction, error) {
-//	////tx, ok := t.(*block.Transaction)
-//	//var tx libblock.Transaction
-//	//var ok bool
-//	//switch t.(type) {
-//	//case *block.Transaction:
-//	//	//meta = chaincore.CORE_TRANSACTION
-//	//	tx, ok = t.(*block.Transaction)
-//	//case *block.Payment:
-//	//	//meta = chaincore.CORE_PAYMENT
-//	//	tx, ok = t.(*block.Payment)
-//	//case *block.NewDevice:
-//	//	//meta = chaincore.CORE_NEWDEVICE
-//	//	tx, ok = t.(*block.NewDevice)
-//	//default:
-//	//	err := errors.New("error data type")
-//	//	return "", nil, err
-//	//}
-//	////tx, ok := t.(*block.Payment)
-//	//if !ok {
-//	//	return "", nil, errors.New("Convert tx to block.Transaction error!")
-//	//}
-//	////if ok2 {
-//	////    err := errors.New(tx2.Type)
-//	////    return "", nil, err
-//	////}
-//	err := n.cryptoService.Sign(fromKey, t)
-//	if err != nil {
-//		return "", nil, err
-//	}
-//	data, err := t.MarshalBinary()
-//	if err != nil {
-//		return "", nil, err
-//	}
-//	blob := libcore.Bytes(data).String()
-//	return blob, t, nil
-//}
-
 func (n *Node) sendTransaction(txm map[string]interface{}) (libblock.TransactionWithData, libblock.Transaction, error) {
 	_, tx, err := n.signTransaction(txm)
 	if err != nil {
@@ -422,14 +363,6 @@ func (n *Node) getNextSequence(address string) uint64 {
 	}
 	return accountEntry.Sequence + 1
 }
-
-//func (n *Node) getAccount(address string) *block.AccountState {
-//	accountEntry, err := n.consensusService.GetAccount(address)
-//	if err != nil {
-//		return nil
-//	}
-//	return accountEntry
-//}
 
 func (n *Node) Call(method string, params []interface{}) (interface{}, error) {
 	switch method {

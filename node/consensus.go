@@ -476,10 +476,6 @@ func (service *ConsensusService) addDevice(account libcore.Address, symbol strin
 }
 
 func (service *ConsensusService) ProcessTransaction(t libblock.Transaction) (libblock.TransactionWithData, error) {
-	//tx, ok := t.(*block.Transaction)
-	//if !ok {
-	//	return nil, errors.New("error transaction")
-	//}
 
 	gasAccount := service.Config.GetGasAccount()
 	e1, err := service.addBalance(gasAccount, int64(t.GetGas()), false, 0)
